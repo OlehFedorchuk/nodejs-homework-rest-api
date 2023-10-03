@@ -44,15 +44,15 @@ updateContacts(allContacts);
 return result;
 }
 
-export const updateContact = async (contactId, { name, email, phone }) => {
+export const updateContact = async (id, { name, email, phone }) => {
   const contacts = await listContacts();
-  const index = contacts.findIndex(contact => contact.id === contactId);
+  const index = contacts.findIndex(contact => contact.id === id);
   if(index === -1){
       return null;
   }
-  contacts[index] = {contactId, name, email, phone};
+  contacts[index] = {id, name, email, phone};
   console.log(contacts[index])
-  await updateContacts(contacts);
+  updateContacts(contacts);
   return contacts[index];
 }
 
