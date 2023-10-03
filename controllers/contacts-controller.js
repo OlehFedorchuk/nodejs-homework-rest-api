@@ -39,9 +39,6 @@ const getById = async (req, res, next) => {
   
 const addById = async (req, res, next) => {
     try {
-      if (!Object.keys(req.body).length) {
-        throw HttpError(400, "missing required name field")
-      }
       const { error } = contactAddSchema.validate(req.body)
       if (error) {
         throw HttpError(400, error.message)
@@ -71,10 +68,6 @@ const deleteById = async (req, res, next) => {
   
 const updateById = async (req, res, next) => {
     try {
-      if (!Object.keys(req.body).length ) {
-        throw HttpError(400, "missing fields")
-      }
-  
       const { error } = contactAddSchema.validate(req.body)
       if (error) {
         throw HttpError(400, error.message)
