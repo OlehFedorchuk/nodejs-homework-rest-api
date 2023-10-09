@@ -8,12 +8,12 @@ const router = express.Router()
 
 router.get('/', contactsController.getAll)
 
-router.get('/:contactId', contactsController.getById)
+// router.get('/:contactId', contactsController.getById)
 
-router.post('/', isEmptyBody, contactsController.addById)
+// router.post('/', isEmptyBody, contactsController.addById)
 
-router.delete('/:contactId', contactsController.deleteById)
+// router.delete('/:contactId', contactsController.deleteById)
 
-router.put('/:contactId', isEmptyBodyPUT, contactsController.updateById)
+// router.put('/:contactId', isEmptyBodyPUT, contactsController.updateById)
 
 export default router;
