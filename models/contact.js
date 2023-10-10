@@ -1,4 +1,6 @@
 import { Schema, model } from "mongoose";
+import Joi from "joi";
+import { handleSaveError, runValidatorsUpdate} from "./hooks.js";
 const contactSchema = new Schema({
     name: {
     type: String,
@@ -14,6 +16,30 @@ const contactSchema = new Schema({
     type: Boolean,
     default: false,
   },})
-  const Contact = model("contact", contactSchema);
 
-  export default Contact;
+contactSchema.post("save", handleSaveError)
+
+contactSchema.pre("findOneAndUpdate", runValidatorsUpdate)
+
+contactSchema.post("findOneAndUpdate", handleSaveError)
+
+export const contactAddSchema = Joi.object({
+  name: Joi.string().required().messages({
+    "any.required": `missing required name field`
+  }),
+  email: Joi.string().email().required().messages({
+    "any.required": `missing required email field`
+  }),
+  phone: Joi.string().required().messages({
+    "any.required": `missing required phone field`
+  }),
+  favorite: Joi.boolean(),
+})
+
+export const contactFavotiteSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+})
+
+const Contact = model("contact", contactSchema);
+
+export default Contact;

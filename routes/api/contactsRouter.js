@@ -10,7 +10,7 @@ router.get('/', contactsController.getAll)
 
 // router.get('/:contactId', contactsController.getById)
 
-// router.post('/', isEmptyBody, contactsController.addById)
+router.post('/', isEmptyBody, contactsController.add)
 
 // router.delete('/:contactId', contactsController.deleteById)
 
