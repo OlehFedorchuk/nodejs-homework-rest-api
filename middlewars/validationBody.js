@@ -7,7 +7,6 @@ const validateBody = contactFavoriteSchema => {
         next(HttpError(400, error.message));
         
     }
-   
     next()
     }
     return func;
