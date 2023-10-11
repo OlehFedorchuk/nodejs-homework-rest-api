@@ -1,6 +1,6 @@
 
 import { HttpError } from '../helpers/HttpError.js';
-import Contact, { contactAddSchema, contactFavotiteSchema } from '../models/contact.js';
+import Contact, { contactAddSchema, contactFavoriteSchema } from '../models/contact.js';
 import { ctrlWrapper } from '../decorators/ctrlWrapper.js';
 
 const getAll =  async (req, res) => {
@@ -78,11 +78,7 @@ const updateById = async (req, res, next) => {
     }
   }
   const updateStatusContact = async (req, res ) => {
-    const { error } = contactFavotiteSchema.validate(req.body)
-    if (error) {
-        throw HttpError(400, error.message)
-    }
-
+    
     const { contactId } = req.params;
 
     const result = await Contact.findByIdAndUpdate(contactId, req.body, {new: true});
