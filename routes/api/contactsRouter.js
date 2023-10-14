@@ -14,7 +14,7 @@ router.post('/', isEmptyBodyPUT, contactsController.add)
 
 router.delete('/:contactId', contactsController.deleteById)
 
-router.put('/:contactId', isValidId, isEmptyBody, contactsController.updateById)
+router.put('/:contactId', isValidId, isEmptyBodyPUT, contactsController.updateById)
 
 router.patch('/:contactId/favorite', isValidId, isEmptyBody, contactsController.updateStatusContact)
 
