@@ -20,7 +20,6 @@ const newUser = await User.create({...req.body, password: hashPassword});
 res.status(201).json({
     email: newUser.email,
     password: newUser.password,
-    // subscription: newUser.subscription,
 })
 }
 
@@ -64,14 +63,20 @@ const logout = async(req,res) =>{
     await User.findByIdAndUpdate(_id, {token: ""});
     res.status(204).json({})
 }
-// const favorite = async (req, res) => {
-//         const {favorite} = req.query;
-//         console.log('message', favorite);
-// }
+
+
+const subscriptionUpdate = async (req, res) =>{
+    const {authorization = ""} = req.headers;
+    const [bearer, token] = authorization.split(" ");
+    const { id } = jwt.verify(token, SECRET_KEY);
+    const result = await User.findByIdAndUpdate(id, req.body, {new: true});
+    res.json(result)
+   
+}
 export default {
     register: ctrlWrapper(register), 
     login: ctrlWrapper(login),
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
-    // favorite: ctrlWrapper(favorite),
+    subscriptionUpdate: ctrlWrapper(subscriptionUpdate),
 };
