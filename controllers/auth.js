@@ -18,8 +18,11 @@ if(user){
 const hashPassword = await bcrypt.hash(password, 10);
 const newUser = await User.create({...req.body, password: hashPassword});
 res.status(201).json({
-    email: newUser.email,
-    password: newUser.password,
+    user:{
+        email: newUser.email,
+        subscription: newUser.subscription,
+    }
+   
 })
 }
 
@@ -65,7 +68,7 @@ const logout = async(req,res) =>{
 }
 
 
-const subscriptionUpdate = async (req, res) =>{
+const subscriptionUpdate = async (req, res) => {
     const {authorization = ""} = req.headers;
     const [bearer, token] = authorization.split(" ");
     const { id } = jwt.verify(token, SECRET_KEY);
