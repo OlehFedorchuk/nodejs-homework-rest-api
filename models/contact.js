@@ -15,7 +15,13 @@ const contactSchema = new Schema({
   favorite: {
     type: Boolean,
     default: false,
-  },})
+  },
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: 'user', //Примітка: 'user' - назва колекції, у якій зберігаються користувачі
+    require: true,
+  },
+})
 
 contactSchema.post("save", handleSaveError)
 
@@ -39,7 +45,11 @@ export const contactAddSchema = Joi.object({
 export const contactFavoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
 })
-
+ export const schemas = {
+  contactAddSchema,
+  contactFavoriteSchema,
+}
 const Contact = model("contact", contactSchema);
 
 export default Contact;
+  
