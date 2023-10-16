@@ -5,7 +5,13 @@ import { ctrlWrapper } from '../decorators/ctrlWrapper.js';
 
 const getAll =  async (req, res) => {
   const {_id: owner} = req.user;
-  const {page = 1, limit = 20} = req.query;//Pagination
+  const {favorite} = req.query;
+  console.log('message', favorite);
+  if(favorite === "false" || favorite === "true"){
+    const favoriteResult = await Contact.find({favorite: favorite})
+      res.json(favoriteResult);
+  }
+  const {page, limit} = req.query;
   const skip = (page - 1) * limit;
     const result = await Contact.find({owner}, "-createdAt, -updatedAt", {skip, limit}).populate("owner", " email password");
     res.json(result)

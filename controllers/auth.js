@@ -64,9 +64,14 @@ const logout = async(req,res) =>{
     await User.findByIdAndUpdate(_id, {token: ""});
     res.status(204).json({})
 }
+// const favorite = async (req, res) => {
+//         const {favorite} = req.query;
+//         console.log('message', favorite);
+// }
 export default {
     register: ctrlWrapper(register), 
     login: ctrlWrapper(login),
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
+    // favorite: ctrlWrapper(favorite),
 };
