@@ -3,10 +3,21 @@ import { HttpError } from '../helpers/HttpError.js';
 import Contact, { contactAddSchema, contactFavoriteSchema } from '../models/contact.js';
 import { ctrlWrapper } from '../decorators/ctrlWrapper.js';
 
-const getAll =  async (req, res) => {
-    const result = await Contact.find();
-    res.json(result)
-  }
+const getAll = async (req, res) => {
+  const { _id: owner } = req.user;
+  const { favorite } = req.query;
+
+  const filter = favorite === "true" || favorite === "false" ? { favorite: favorite === "true", owner } : { owner };
+
+  const { page, limit } = req.query;
+  const skip = (page - 1) * limit;
+
+  const result = await Contact.find(filter, "-createdAt -updatedAt", { skip, limit }).populate("owner", "email password");
+  res.json(result);
+};
+
+
+
 
 const getById = async (req, res) => {
     
@@ -20,11 +31,9 @@ const getById = async (req, res) => {
   }
 
   const add = async (req, res)=>{
-    const { error } = contactAddSchema.validate(req.body)
-        if (error) {
-            throw HttpError(400, error.message)
-        }
-        const result = await Contact.create(req.body);
+    
+        const {_id: owner} = req.user;
+        const result = await Contact.create({...req.body, owner});
         res.status(201).json(result)
   }
 
@@ -78,6 +87,10 @@ const updateById = async (req, res, next) => {
     }
   }
   const updateStatusContact = async (req, res ) => {
+    const { error } = contactFavoriteSchema.validate(req.body)
+    if (error) {
+        throw HttpError(400, error.message)
+    }
     const { contactId } = req.params;
 
     const result = await Contact.findByIdAndUpdate(contactId, req.body, {new: true});

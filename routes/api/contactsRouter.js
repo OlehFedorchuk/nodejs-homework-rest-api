@@ -1,21 +1,21 @@
 import express from 'express';
 import contactsController from "../../controllers/contacts.js";
 
-import {isEmptyBody, isEmptyBodyPUT} from "../../middlewars/index.js";
-import { isValidId } from "../../middlewars/IsValidld.js";
+import {authenticate, isEmptyBody, isEmptyBodyPUT} from "../../middlewars/index.js";
+import { isValidId } from "../../middlewars/index.js";
 
 const router = express.Router()
 
-router.get('/', contactsController.getAll)
+router.get('/', authenticate, contactsController.getAll)
 
-router.get('/:contactId',isValidId, contactsController.getById)
+router.get('/:contactId', authenticate, isValidId, contactsController.getById)
 
-router.post('/', isEmptyBodyPUT, contactsController.add)
+router.post('/',authenticate, isEmptyBodyPUT, contactsController.add)
 
-router.delete('/:contactId', contactsController.deleteById)
+router.delete('/:contactId', authenticate, contactsController.deleteById)
 
-router.put('/:contactId', isValidId, isEmptyBodyPUT, contactsController.updateById)
+router.put('/:contactId', authenticate, isValidId, isEmptyBodyPUT, contactsController.updateById)
 
-router.patch('/:contactId/favorite', isValidId, isEmptyBody, contactsController.updateStatusContact)
+router.patch('/:contactId/favorite', authenticate, isValidId, isEmptyBody, contactsController.updateStatusContact)
 
 export default router;
