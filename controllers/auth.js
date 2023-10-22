@@ -2,29 +2,56 @@ import User from "../models/user.js";
 import { HttpError} from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../decorators/ctrlWrapper.js";
 import bcrypt from "bcrypt";
-import  jwt  from "jsonwebtoken";
+import jwt  from "jsonwebtoken";
+import fs from "fs/promises";
+import path from "path";
+import gravatar from "gravatar";
+import Jimp from "jimp";
 import dotenv from "dotenv";
 dotenv.config();
 
 const {SECRET_KEY} = process.env;
 
+const posterPath = path.resolve("public", "avatars");
 
 const register = async(req, res) => {
     const {email, password} = req.body;
-const user = await User.findOne({ email });
+    console.log('password', password);
+    const user = await User.findOne({ email });
+
 if(user){
     throw HttpError (409, "Email already in use");
 }
 const hashPassword = await bcrypt.hash(password, 10);
-const newUser = await User.create({...req.body, password: hashPassword});
+
+
+
+if(req.file){
+    const {path: oldPath, filename} = req.file;
+    const newPath = path.join(posterPath, filename);
+    await fs.rename(oldPath, newPath);
+    const image = await Jimp.read(newPath);
+    image.resize(250, 250);
+    await image.writeAsync(newPath);
+    const avatarURL = path.join('avatars', filename);
+    const newUser = await User.create({...req.body, avatarURL, password: hashPassword});
+
 res.status(201).json({
     user:{
         email: newUser.email,
         subscription: newUser.subscription,
     }
-   
 })
 }
+const newUser = await User.create({ ...req.body, avatarUrl: gravatar.url(email, {s: 250}), password: hashPassword });
+res.status(201).json({
+    user:{
+        email: newUser.email,
+        subscription: newUser.subscription,
+    }
+})
+}
+
 
 
 const login = async(req,res) => {
@@ -76,10 +103,32 @@ const subscriptionUpdate = async (req, res) => {
     res.json(result)
    
 }
+const updateAvatar = async (req, res) => {
+    const { email } = req.user;
+
+    const { path: oldPath, filename } = req.file;
+
+    const newPath = path.join(posterPath, filename)
+
+    await fs.rename(oldPath, newPath)
+
+    const image = await Jimp.read(newPath);
+    image.resize(250, 250);
+    await image.writeAsync(newPath);
+
+    const avatarURL = path.join('avatars', filename)
+
+    await User.findOneAndUpdate({email}, { avatarURL }, {new: true})
+    
+    res.status(200).json({
+        avatarURL
+    })
+}
 export default {
     register: ctrlWrapper(register), 
     login: ctrlWrapper(login),
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
     subscriptionUpdate: ctrlWrapper(subscriptionUpdate),
+    updateAvatar: ctrlWrapper(updateAvatar),
 };
