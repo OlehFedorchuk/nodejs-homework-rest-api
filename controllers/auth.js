@@ -11,22 +11,18 @@ import dotenv from "dotenv";
 import  { nanoid } from "nanoid";
 dotenv.config();
 
-const {SECRET_KEY} = process.env;
+const {SECRET_KEY, BASE_URL} = process.env;
 
 const posterPath = path.resolve("public", "avatars");
 
 const register = async(req, res) => {
     const {email, password} = req.body;
-    // console.log('password', password);
     const user = await User.findOne({ email });
 
 if(user){
     throw HttpError (409, "Email already in use");
 }
 const hashPassword = await bcrypt.hash(password, 10);
-// const verificationCode = nanoid();
-// console.log('verificationCode', verificationCode);
-
 
 if(req.file){
     const {path: oldPath, filename} = req.file;
@@ -47,12 +43,14 @@ res.status(201).json({
 }
 const verificationToken = nanoid();
 const newUser = await User.create({ ...req.body, avatarUrl: gravatar.url(email, {s: 250}), password: hashPassword, verificationToken});
-const verifyEmail = {
+const mail = {
         to: email,
         subject: "Verify email",
-        html: `<a target="_blank" href="http://localhost:3000/users/verify/${verificationToken}">Click to virify email</a>`
+        html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click to virify</a>`
+       
     }
-    await sendEmail(verifyEmail);
+    await sendEmail(mail);
+
 res.status(201).json({
     user:{
         email: newUser.email,
@@ -61,13 +59,51 @@ res.status(201).json({
 })
 }
 
+const verify = async (req, res) => {
+    const {verificationToken} = req.params;
+    const user = await User.findOne({verificationToken});
 
+    if(!user){
+        throw HttpError(404, 'User not found');
+    }
+    await User.findByIdAndUpdate(user._id, {verificationToken: null, verify: true})
+
+res.status(200).json({
+    message: 'Verification successful',
+})
+}
+const verifyRefresh = async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if(!user){
+        throw HttpError(401, "Email not found")
+    }
+
+    if (user.verify === true) {
+        throw HttpError(400, 'Verification has already been passed')
+    }
+
+    const verifyEmail = {
+        to: email,
+        subject: 'Verify email',
+        html:`<a target='_blank' href='${BASE_URL}/api/users/verify/${user.verificationToken}'>Click to verify</a>`
+    }
+
+    await sendEmail(verifyEmail);
+
+    res.status(200).json({
+        message: "Verification email sent"
+    })
+}
 
 const login = async(req,res) => {
     const {email, password} = req.body; 
     const user = await User.findOne({email});
     if(!user){
         throw HttpError(401, "Not authorizet");
+    }
+    if(!user.verify){
+        throw HttpError(400, "First needed verify email")
     }
     const passwordCompare = await bcrypt.compare(password, user.password);
     if(!passwordCompare){
@@ -135,6 +171,8 @@ const updateAvatar = async (req, res) => {
 }
 export default {
     register: ctrlWrapper(register), 
+    verify: ctrlWrapper(verify),
+    verifyRefresh: ctrlWrapper(verifyRefresh),
     login: ctrlWrapper(login),
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),

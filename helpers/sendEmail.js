@@ -16,13 +16,7 @@ const nodemailerConfig = {
   }
 };
 const transport  = nodemailer.createTransport(nodemailerConfig);
-// const data = {
-// //from: UKR_NET_EMAIL,
-//   to: 'yehohad414@qianhost.com',
-//   subject: 'Nodemailer test email!!!',
-//   html: "<strong>Test email</strong>"
-// };
-// transport .sendMail(emailOptions).then(info => console.log(info)).catch((err => console.log(err)));
+
 const sendEmail = (data) => {
     const email = {...data, from: UKR_NET_EMAIL}
     return transport.sendMail(email);
