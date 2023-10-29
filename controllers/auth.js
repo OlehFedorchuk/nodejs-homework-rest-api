@@ -1,5 +1,5 @@
 import User from "../models/user.js";
-import { HttpError} from "../helpers/HttpError.js";
+import { HttpError, sendEmail} from "../helpers/index.js";
 import { ctrlWrapper } from "../decorators/ctrlWrapper.js";
 import bcrypt from "bcrypt";
 import jwt  from "jsonwebtoken";
@@ -8,6 +8,7 @@ import path from "path";
 import gravatar from "gravatar";
 import Jimp from "jimp";
 import dotenv from "dotenv";
+import  { nanoid } from "nanoid";
 dotenv.config();
 
 const {SECRET_KEY} = process.env;
@@ -16,14 +17,15 @@ const posterPath = path.resolve("public", "avatars");
 
 const register = async(req, res) => {
     const {email, password} = req.body;
-    console.log('password', password);
+    // console.log('password', password);
     const user = await User.findOne({ email });
 
 if(user){
     throw HttpError (409, "Email already in use");
 }
 const hashPassword = await bcrypt.hash(password, 10);
-
+// const verificationCode = nanoid();
+// console.log('verificationCode', verificationCode);
 
 
 if(req.file){
@@ -43,7 +45,14 @@ res.status(201).json({
     }
 })
 }
-const newUser = await User.create({ ...req.body, avatarUrl: gravatar.url(email, {s: 250}), password: hashPassword });
+const verificationToken = nanoid();
+const newUser = await User.create({ ...req.body, avatarUrl: gravatar.url(email, {s: 250}), password: hashPassword, verificationToken});
+const verifyEmail = {
+        to: email,
+        subject: "Verify email",
+        html: `<a target="_blank" href="http://localhost:3000/users/verify/${verificationToken}">Click to virify email</a>`
+    }
+    await sendEmail(verifyEmail);
 res.status(201).json({
     user:{
         email: newUser.email,
