@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 import Joi from "joi";
-import {handleSaveError} from "./hooks.js";
+import {handleSaveError, runValidatorsUpdate,} from "./hooks.js";
 
 const userSchema = new Schema({
         password: {
@@ -23,13 +23,23 @@ const userSchema = new Schema({
         },
         token: {
           type: String,
-          default: ""
+          default: "",
         },
-        
+        verify: {
+          type: Boolean,
+          default: false,
+        },
+        verificationToken: {
+          type: String,
+          require: [true, 'Verify token is required'],
+        }
 },{versionKey: false, timestamps: true});
 
 
 userSchema.post("save", handleSaveError)
+userSchema.pre("findOneAndUpdate", runValidatorsUpdate)
+
+userSchema.post("findOneAndUpdate", handleSaveError)
 
 const registerSchema = Joi.object({
     password: Joi.string().min(6).required().description("Set password for user"),
@@ -38,6 +48,9 @@ const registerSchema = Joi.object({
 const loginSchema = Joi.object({
     password: Joi.string().min(6).required().description("Set password for user"),
     email: Joi.string().email().required().description("Email is required"),
+})
+const verifyEmailSchema = Joi.object({
+  email: Joi.string().email().required().description("Email is required"),
 })
 const subscriptionSchema = Joi.object({
     subscription: Joi.string().valid("starter", "pro", "business").default("starter"),
@@ -49,6 +62,7 @@ const ownerSchema = Joi.object({
  export const schemas = {
     registerSchema,
     loginSchema,
+    verifyEmailSchema,
     subscriptionSchema,
     ownerSchema,
 }
